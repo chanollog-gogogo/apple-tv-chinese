@@ -7,7 +7,10 @@
   - Ted Lasso 详情：US 为英文简介，SG 为中文简介；预告片、花絮、相关内容、演职员表变中文。片名仍为 Ted Lasso。
   - Apple TV 原创频道：SG 返回“在Apple TV上继续观看”“10大热门电视节目”“10大热门电影”等中文栏目；Featured 仍为英文。
   - 主页面：SG 返回“继续观看”“Apple TV上的电视节目前10名”“Apple TV上的电影前10名”等中文栏目，少量宣传栏目仍为英文。
-- macOS Shadowrocket + Apple TV App：待验证。
+- GitHub发布：仓库与8个在线文件已核对，内容与本地一致。
+- macOS Shadowrocket：2026-10-24已通过安装链接接收模块，文件位于本机应用Modules目录。未以文件到达认定模块已勾选/生效。
+- macOS Apple TV App：已记录安装前主页仍有英文简介、Continue Watching等内容；安装后实机验证未完成。
+- Mac测试阻碍：小火箭窗口自动化异常，配置侧栏操作无可靠响应；当前本机default配置只含general/rule/host/urlrewrite，未发现MITM证书/启用项。未替用户生成或信任新根证书，未启用VPN，原网络模式及节点保留。需用户在场确认现用证书并完成信任后继续。
 - tvOS Shadowrocket：待用户电视端验证。
 - iOS QuanX：待手机端验证。
 - 字幕和播放兼容：待实机验证。
