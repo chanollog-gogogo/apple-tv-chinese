@@ -1,0 +1,8 @@
+#!name=Apple TV 中文界面（新加坡）
+#!desc=实验版0.1.0，仅处理Apple TV内容请求，不改账户地区或字幕。请停用原iRingo TV重写。
+
+#[rewrite_local]
+^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/(configurations|canvases|shelves|brands|channels|movies|shows|episodes|search)(\/|\?|$) url script-request-header https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/apple-tv-zh.js
+
+#[mitm]
+hostname = uts-api.itunes.apple.com
