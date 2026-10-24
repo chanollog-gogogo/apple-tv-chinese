@@ -1,0 +1,11 @@
+#!name=Apple TV 中文全界面（现有字幕兼容）
+#!desc=0.3.0-dev.1：通用展示改写，保留美区。须保留现有 v261013a 字幕模块，并让本模块优先匹配 UTS；不含字幕安装包。官方缺少中文资料时保留原文。Mac已做阶段验收，tvOS/iOS尚待验收。
+#!version=0.3.0-dev.1
+#!author=chanollog-gogogo
+#!homepage=https://github.com/chanollog-gogogo/apple-tv-chinese/tree/dev-0.3
+
+[Script]
+AppleTV-Full.response = type=http-response,engine=webview,pattern=^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/,requires-body=1,max-size=6291456,timeout=30,script-path=https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/apple-tv-full-subtitles.bundle.js?v=0.3.0-dev.1
+
+[MITM]
+hostname = %APPEND% uts-api.itunes.apple.com

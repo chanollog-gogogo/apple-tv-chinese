@@ -1,0 +1,20 @@
+// Small, synthetic public tests. No account, traffic capture or network needed.
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const api=require('./full-display.js'),compat=require('./subtitle-adapter.js');
+const req={method:'GET',url:'https://uts-api.itunes.apple.com/uts/v3/shows/umc.cmc.example?sf=143441&token=TEST_ONLY',headers:{Authorization:'TEST_ONLY',Cookie:'TEST_ONLY'}};
+const us={data:{content:{id:'umc.cmc.example',type:'Show',title:'Example',description:'English',url:'https://tv.apple.com/us/keep',assets:{hlsUrl:'US_KEEP',fpsKeyServerUrl:'US_LICENSE'}},items:[{id:'B',type:'Movie',title:'B'},{id:'A',type:'Movie',title:'A'}],offers:[{price:0,currency:'USD',entitled:true}]}};
+const tw={data:{content:{id:'umc.cmc.example',type:'Show',title:'示例节目',description:'官方中文介绍',assets:{hlsUrl:'MUST_NOT_COPY'}},items:[{id:'A',title:'甲'},{id:'B',title:'乙'},{id:'C',title:'不得插入'}]}};
+const out=JSON.parse(api.localize(req,{body:JSON.stringify(us)},{TW:tw,SG:{},HK:{}},{}).body);
+assert.equal(out.data.content.title,'示例节目');assert.deepEqual(out.data.content.assets,us.data.content.assets);
+assert.deepEqual(out.data.items.map(x=>x.id),['B','A']);assert.deepEqual(out.data.offers,us.data.offers);
+assert.equal(out.data.content.url,us.data.content.url);assert.equal(req.headers.Authorization,'TEST_ONLY');
+const helper=api.helper('/uts/v3/shows/umc.cmc.example','TW');assert.ok(!JSON.stringify(helper).includes('TEST_ONLY'));
+assert.equal(api.helper('/uts/v3/user/settings','TW'),null);assert.equal(api.helper('/uts/v3/search?private','TW'),null);
+assert.equal(api.localize({...req,method:'POST'},{body:JSON.stringify(us)},{},{}),null);
+assert.equal(api.localize(req,{body:'invalid JSON'},{},{}),null);
+const cfg={data:{applicationProps:{storefront:{country:'United States',storefrontId:143441,defaultLocale:'en_US',defaultLanguage:'English',localesSupported:['en_US'],languagesSupported:['English']},requiredParamsMap:{Default:{sf:'143441',locale:'en-US',utsk:'TEST_ONLY'}},tabs:[{type:'WatchNow',title:'Home'}]}}};
+const changed=JSON.parse(api.localize({...req,url:'https://uts-api.itunes.apple.com/uts/v3/configurations?sf=143441'},{body:JSON.stringify(cfg)},{},{}).body);
+assert.equal(changed.data.applicationProps.storefront.storefrontId,143441);assert.equal(changed.data.applicationProps.requiredParamsMap.Default.sf,'143441');assert.equal(changed.data.applicationProps.requiredParamsMap.Default.utsk,'TEST_ONLY');assert.equal(changed.data.applicationProps.requiredParamsMap.Default.locale,'zh-Hans');
+let n=0;vm.runInNewContext(fs.readFileSync(__dirname+'/full-display.js','utf8'),{$request:req,$done:r=>{n++;assert.equal(Object.keys(r).length,0);}});assert.equal(n,1);
+assert.throws(()=>compat.parse('not fixed JSON constants'));
+console.log('PASS generic display identity matching, US catalog/rights/playback preservation, anonymous requests, language-only configuration and fail-open wrappers.');

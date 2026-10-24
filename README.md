@@ -1,51 +1,80 @@
-# Apple TV 中文展示（保留美区）
+# Apple TV 中文全界面：0.3 开发分支
 
-**0.2.0-preview，只是《Silo／末日地堡》展示样板，不是全片库中文化。**
+这是通用展示改写引擎，不再限定 Silo 或任何影片名单。保留原美区首页列表、
+影片入口、列表顺序、权益、价格、DRM 和账户；从 Apple 台湾、新加坡、香港
+的匿名公开接口取得中文展示资料，按相同内容 ID 匹配，不用其他区的片库替换美区。
 
-旧版 0.1.0 会改变内容区服，实际测试曾导致美区影片入口消失和播放失败，已撤回该实现。
-请更新整个模块／重写资源，不能只更新旧脚本缓存。旧链接继续使用，但内容已换成不改请求、不切区的新版本。
+**它仍是开发版，不代表所有内容和所有设备已验收完成。** 官方中文区没有的
+名称、简介或图片会保留原文；不接入第三方翻译服务。
 
-## 安装链接
+## 安装选择
 
-- 小火箭模块（macOS／tvOS）：[AppleTV-Chinese.srmodule](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/AppleTV-Chinese.srmodule)
-- QuanX 远程重写（iOS）：[AppleTV-Chinese.snippet](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/AppleTV-Chinese.snippet)
+### 没有现用 Apple TV 字幕插件
 
-**字幕兼容限制：不要与其他同样处理 `uts-api.itunes.apple.com` 的响应脚本同时启用。**
-本机发现独立安装的中文展示脚本会被字幕模块抢先匹配，两个模块勾选不代表两者都会运行。
-保留现有字幕功能的用户，应先继续用原字幕模块，不要为了安装本试验版关闭字幕功能。
-已验证一个本机专用串联副本，但含第三方代码，未作为公开安装版本发布。
+- [小火箭：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full.srmodule)
+- [QuanX：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full.snippet)
 
-安装前备份配置，停用旧版中文界面模块及 iRingo TV 等重叠资源。
-需开启客户端总开关、重写／脚本及 HTTPS 解密，使用已安装和信任的客户端证书。
-本模块只追加 `uts-api.itunes.apple.com`，不需要 `*.apple.com` 或账户登录域名。
-不要为刷新界面反复退出、登录 Apple 账户。
+### 已安装并使用 rexchen1803 的 v261013a 字幕模块
 
-模块不是完整代理配置，不改节点、路由、Wi-Fi 场景或账户地区。
-在家走直连也须保留客户端处理流量，关闭客户端总开关后脚本不会运行。
-重开 Apple TV App 后从原美区片库进入 Silo 详情检查效果。
+- [小火箭：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full-SubtitleCompat.srmodule)
+- [QuanX：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full-SubtitleCompat.snippet)
 
-## 覆盖与边界
+保留原字幕模块的其他规则；本模块必须在原 UTS 响应处理之前命中。
+兼容版不是字幕安装包，没有原字幕插件时不要使用兼容版，否则其播放桥接地址
+无法被处理。它只兼容上述已核对版本，不承诺未来上游更改自动兼容。
 
-- 只接受美区 `sf=143441`、匹配内容 ID、GET 成功响应。
-- Silo 详情：中文剧名、简介及已有的三种图片位置。
-- 七个已知单集：S1 E1–E6、S2 E10 的名称、简介和剧名字段。
-- 当前观看单集 smartEpisode 及已知分集列表／详情可改展示字段。
-- 使用台湾公开中文名称／图片、新加坡公开简体简介（2026-10-24 静态资料）。
-- 未知影片、其他单集、首页推荐／搜索列表、栏目、系统菜单均保持原样。
-- Mac 顶部仍有一处 Into the Fire 英文标题，尚未覆盖全部展示字段。
-- 不改变 storefront、locale、请求头、片库列表、顺序、价格、权益、播放入口、DRM、HLS、字幕地址、登录或订阅。
-- 没有外部请求、翻译服务、数据上传或凭证日志；异常保留原响应。
+不要同时启用独立版和兼容版。停用旧 0.1 切区版、0.2 Silo 版及其他重叠的
+iRingo TV 响应脚本。保留原节点、分流和网络场景。
 
-## 验证状态
+打开小火箭／QuanX 总开关、脚本／重写和 HTTPS 解密；使用客户端已安装且
+已信任的证书。模块本身只追加 `uts-api.itunes.apple.com`；字幕插件自己的
+域名范围另行保留，不追加账户登录域名或 `*.apple.com`。
+单独勾选模块而不开启必要的解密不会生效。
 
-Mac 已看到中文剧名和当前分集简介，原美区链接保留；原创剧及原本可访问的美区电影能播放。
-字幕串联副本的菜单保留简体中文，但未逐句验证实际字幕。
-**本公开独立模块不等同于串联副本。tvOS 和 iOS 本版本尚未真机验证。**
+## 实际处理范围
 
-详见 [TESTING.md](TESTING.md)。发生异常请停用本模块、重开 Apple TV，保留原证书和原字幕模块。
+- 首页栏目、影视卡片、搜索结果、电影／剧集详情、各季分集和预告／花絮展示。
+- 中文名称、简介、已有图片位置、类型名称、节目标签、季／集及常用操作文字。
+- `configurations` 只调整语言字段；美区 storefront、路由、账户和功能列表不变。
+- 原生系统／App 菜单仍依赖设备和 App 自身的中文语言设置。模块不修改程序文件。
+- 台湾中文名称，优先新加坡简体简介；可取得时优先香港标题图片。
+  Apple 官方图片本身可能保留英文品牌字，不能保证每一张海报都含中文。
+- 无中文数据、网络失败或超时时保留原响应，而不是删掉影片或伪造可播放状态。
 
-## 来源与许可
+## 隐私、性能及字幕
 
-此版本为独立展示字段改写，不打包 iRingo 或第三方字幕脚本，不冒充官方插件。
-早期参考 [NSRingo/TV](https://github.com/NSRingo/TV) 的 UTS 参数设计；该切区方案已撤回。
-原创代码使用 MIT 许可，见 LICENSE。Apple 内容及图片权利归各自权利人。
+辅助请求只去 Apple 内容域名，不复制原请求的 Cookie、授权头、账户参数或
+原始查询串。兼容版另读取已安装字幕版本固定地址里的 JSON 映射常量；
+**不执行下载的 JavaScript**，也不把影视资料发给该 GitHub 地址。
+没有第三方翻译、登录拦截、付费接口或凭证日志。
+
+公开展示资料在客户端缓存七天，优先保留当前页面；请求有并发和时间预算。
+缓存冷启动会比普通页面慢，实际速度取决于网络。日志仅输出改写数、缺失数、
+请求数和耗时，不输出完整 URL、账户标识或令牌。
+
+兼容处理只沿用现有字幕规则对 `hlsUrl` 的变换，不更改许可证服务器或权益；
+显示字段处理与该兼容层独立。详见 [TESTING-0.3.md](TESTING-0.3.md)。
+
+源码可运行 `node test-core.cjs` 做无联网合成数据检查，运行 `node build-full.cjs`
+重建两种脚本。匿名接口及原生客户端的阶段验收记录在上述测试文档中。
+
+## 验收状态与已知缺口
+
+- Mac 已观察到首页“继续观看”、多部剧集及电影卡片中文化。
+- Mac 的《基地》名称、当前单集、分集列表和简介中文化；美区链接及播放保留。
+- Mac 的《侏罗纪世界》名称、简介中文化，电影仍能播放；字幕菜单保留简体中文。
+- 匿名首页样本 76 个不同影视／分集条目中取得 75 个中文名称。`Insomnia` 的同 ID
+  在所查中文区不可用，保留原文。这个统计不代表全片库覆盖率。
+- 播放器信息栏的片名、个别原生回顾按钮、部分预告片和附加评论文字仍可能英文，
+  已登记为缺口，不能据此宣称“整个 App 全部完成”。
+- tvOS 和 iOS 本分支尚未真机验收，不能把 Mac 结果等同于三端全部通过。
+- 无需退出 Apple 账户。不要为刷新模块反复登录或转区。
+
+## 回退
+
+备份现有配置。异常时停用本模块，保留原字幕模块，彻底退出并重开 Apple TV。
+不删除证书、不重置 App、不清除观看记录，也不需要改节点或路由器。
+
+原创源码为 MIT 许可。字幕兼容参考项目：
+[rexchen1803/apple-video-subtitles](https://github.com/rexchen1803/apple-video-subtitles)。
+本分支不打包其源代码、字幕文件、用户账户或流量记录。
