@@ -7,17 +7,35 @@
 **它仍是开发版，不代表所有内容和所有设备已验收完成。** 官方中文区没有的
 名称、简介或图片会保留原文；不接入第三方翻译服务。
 
+## 0.3.0-dev.2：tvOS 断开问题的修复候选
+
+2026-10-26 真机对照：启用 dev.1 时打开剧集会触发 VPN 断开；仅停用界面模块、
+保留原字幕模块后恢复正常。抓取日志显示多个详情和分集响应同时进入脚本，
+随后日志流中断；系统报告的隧道内存上限为 50 MB。没有取得 Jetsam／崩溃报告，
+因此具体的系统终止原因仍未证实，不能把内存不足写成已确定结论。
+
+dev.2 改用小火箭默认脚本引擎；每个响应至多一个辅助查询、最多 24 次查询，
+同一原响应只解析和序列化一次，外区响应立即缩为展示字段索引。展示缓存限制为
+192,000 字符、最多 150 个条目；输入超过 2 Mi 字符或辅助响应超过 1 Mi 字符时
+跳过，12 秒仍未完成则保留原响应。查询预算可能使冷缓存的部分条目保留原文。
+这些界限用于约束工作量，并不等同于对运行时内存峰值的保证。
+
+原字幕 v261013a 的 3 KB 固定映射数据随兼容包提供，不再在每次响应中下载映射。
+原字幕模块的播放、播放列表与字幕请求脚本仍须保留。
+
+这是待电视端复测的修复候选。请勿仅凭本地自动检查就认定已解决 tvOS 断开。
+
 ## 安装选择
 
 ### 没有现用 Apple TV 字幕插件
 
-- [小火箭：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full.srmodule)
-- [QuanX：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full.snippet)
+- [小火箭：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full.srmodule)
+- [QuanX：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full.snippet)
 
 ### 已安装并使用 rexchen1803 的 v261013a 字幕模块
 
-- [小火箭：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full-SubtitleCompat.srmodule)
-- [QuanX：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/AppleTV-Chinese-Full-SubtitleCompat.snippet)
+- [小火箭：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full-SubtitleCompat.srmodule)
+- [QuanX：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full-SubtitleCompat.snippet)
 
 保留原字幕模块的其他规则；本模块必须在原 UTS 响应处理之前命中。
 兼容版不是字幕安装包，没有原字幕插件时不要使用兼容版，否则其播放桥接地址
@@ -44,11 +62,11 @@ iRingo TV 响应脚本。保留原节点、分流和网络场景。
 ## 隐私、性能及字幕
 
 辅助请求只去 Apple 内容域名，不复制原请求的 Cookie、授权头、账户参数或
-原始查询串。兼容版另读取已安装字幕版本固定地址里的 JSON 映射常量；
-**不执行下载的 JavaScript**，也不把影视资料发给该 GitHub 地址。
+原始查询串。兼容版附带已安装字幕版本的固定 JSON 映射常量；
+**不执行下载的 JavaScript**，也不把影视资料发给 GitHub。
 没有第三方翻译、登录拦截、付费接口或凭证日志。
 
-公开展示资料在客户端缓存七天，优先保留当前页面；请求有并发和时间预算。
+公开展示资料在客户端缓存七天，优先保留当前页面；请求有数量和时间预算。
 缓存冷启动会比普通页面慢，实际速度取决于网络。日志仅输出改写数、缺失数、
 请求数和耗时，不输出完整 URL、账户标识或令牌。
 

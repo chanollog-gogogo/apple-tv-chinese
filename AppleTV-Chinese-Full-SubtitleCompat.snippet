@@ -1,8 +1,8 @@
-#!name=Apple TV 中文全界面（现有字幕兼容）
-#!desc=0.3.0-dev.1：通用展示改写，保留美区。须保留现有 v261013a 字幕模块，并让本模块优先匹配 UTS；不含字幕安装包。官方缺少中文资料时保留原文。iOS尚待真机验收；此资源须优先于重叠的UTS响应资源。
+#!name=Apple TV 中文全界面（修复测试 dev.2）
+#!desc=0.3.0-dev.2 修复候选：限制辅助查询与缓存，默认脚本引擎；保留美区及原 v261013a 字幕模块，界面模块优先。待 tvOS 真机复测。
 
 #[rewrite_local]
-^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/ url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/apple-tv-full-subtitles.bundle.js?v=0.3.0-dev.1
+^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/ url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/apple-tv-full-subtitles.bundle.js?v=0.3.0-dev.2
 
 #[mitm]
 hostname = uts-api.itunes.apple.com

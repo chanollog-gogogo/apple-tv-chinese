@@ -1,0 +1,154 @@
+{
+  "revision": "cfa478aa18dba4c3f2054f4c0959f6c9f3f2bbee",
+  "f1Replays": [
+    {
+      "slug": "australia",
+      "programId": "1337486392",
+      "assetId": "1881724926",
+      "revision": "f1aur22m1"
+    },
+    {
+      "slug": "china",
+      "programId": "1337522687",
+      "assetId": "1881777941",
+      "revision": "f1cnr21m2"
+    },
+    {
+      "slug": "japan",
+      "programId": "1326620577",
+      "assetId": "1881763666",
+      "revision": "f1jpr20m1"
+    },
+    {
+      "slug": "miami",
+      "programId": "1364568578",
+      "assetId": "1881733891",
+      "revision": "f1mir20m1"
+    },
+    {
+      "slug": "canada",
+      "programId": "1392837560",
+      "assetId": "1881753363",
+      "revision": "f1car20m1"
+    },
+    {
+      "slug": "monaco",
+      "programId": "1411825097",
+      "assetId": "1881742204",
+      "revision": "f1mcr25m1"
+    },
+    {
+      "slug": "barcelona-catalunya",
+      "programId": "1413846083",
+      "assetId": "1881690171",
+      "revision": "f1bar17m1"
+    },
+    {
+      "slug": "austria",
+      "programId": "1429344944",
+      "assetId": "1882150267",
+      "revision": "f1atr22m1"
+    },
+    {
+      "slug": "great-britain",
+      "programId": "1436852938",
+      "assetId": "1881739464",
+      "revision": "f1gbr26m1"
+    },
+    {
+      "slug": "belgium",
+      "programId": "1457248952",
+      "assetId": "1881786635",
+      "revision": "f1ber12m1"
+    },
+    {
+      "slug": "hungary",
+      "programId": "1461869625",
+      "assetId": "1881700068",
+      "revision": "f1hur32m1"
+    },
+    {
+      "slug": "netherlands",
+      "programId": "1478680801",
+      "assetId": "1882152939",
+      "revision": "f1ntr23m1"
+    },
+    {
+      "slug": "spain",
+      "programId": "1497835498",
+      "assetId": "1881721455",
+      "revision": "f1spr22m1"
+    },
+    {
+      "slug": "azerbaijan",
+      "programId": "1509835184",
+      "assetId": "1882094604",
+      "revision": "azr1-76f792623176"
+    }
+  ],
+  "seriesTargets": {
+    "1880499459": {
+      "slug": "dts-s08e01",
+      "programId": "1288232144"
+    },
+    "1880598345": {
+      "slug": "dts-s08e02",
+      "programId": "1288232871"
+    },
+    "1880600976": {
+      "slug": "dts-s08e03",
+      "programId": "1287879890"
+    },
+    "1880613354": {
+      "slug": "dts-s08e04",
+      "programId": "1287887004"
+    },
+    "1880628537": {
+      "slug": "dts-s08e05",
+      "programId": "1312757141"
+    },
+    "1880639133": {
+      "slug": "dts-s08e06",
+      "programId": "1287881790"
+    },
+    "1880673513": {
+      "slug": "dts-s08e07",
+      "programId": "1288233124"
+    },
+    "1880677128": {
+      "slug": "dts-s08e08",
+      "programId": "1287884341"
+    }
+  },
+  "seriesRevision": "dts8-20260920d",
+  "shelfTargets": {
+    "6809945696": "2003-28-days-later",
+    "6813800850": "2007-american-gangster",
+    "6809968299": "2001-black-hawk-down",
+    "6809916755": "2006-blood-diamond",
+    "6809968224": "1998-fallen",
+    "6809968703": "2014-fury",
+    "6809968396": "2010-going-the-distance",
+    "6809968982": "1997-good-will-hunting",
+    "6809969812": "2002-insomnia",
+    "6812093448": "2015-jurassic-world",
+    "6809973625": "1976-taxi-driver",
+    "6809916863": "2011-the-girl-with-the-dragon-tattoo",
+    "6809975421": "2008-tropic-thunder"
+  },
+  "shelfRevisions": {
+    "6809945696": "shelf1002-d4548655248c-credit-v2",
+    "6813800850": "shelf1002-21ba574ddeb3-credit-v2",
+    "6809968299": "shelf1002-dcb4b0cab8cb-credit-v2",
+    "6809916755": "shelf1002-9648950795c1-credit-v2",
+    "6809968224": "shelf1002-342fb0c70442-credit-v2",
+    "6809968703": "shelf1002-d179d8ebf9f6-credit-v2",
+    "6809968396": "shelf1002-53613ec3a8fb-credit-v2",
+    "6809968982": "shelf1002-a1fdcb98a5d7-credit-v2",
+    "6809969812": "shelf1002-68f174a204e7-credit-v2",
+    "6812093448": "shelf1002-61f160f59338-credit-v2",
+    "6809973625": "shelf1002-a35439e85a3a-credit-v2",
+    "6809916863": "shelf1002-511ca230dc1a-credit-v2",
+    "6809975421": "shelf1002-fbb44dd760b6-credit-v2"
+  }
+}

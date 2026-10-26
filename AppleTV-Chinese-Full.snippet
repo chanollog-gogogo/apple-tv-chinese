@@ -1,8 +1,8 @@
 #!name=Apple TV 中文全界面
-#!desc=0.3.0-dev.1：通用展示改写，保留美区；无现有字幕模块时使用。与其他 UTS 响应脚本互斥。官方缺少中文资料时保留原文。iOS尚待真机验收；此资源须优先于重叠的UTS响应资源。
+#!desc=0.3.0-dev.2 修复候选：限制辅助查询与缓存，默认脚本引擎，保留美区；未安装原字幕模块时使用。待 tvOS 真机复测。
 
 #[rewrite_local]
-^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/ url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/apple-tv-full.bundle.js?v=0.3.0-dev.1
+^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/ url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/apple-tv-full.bundle.js?v=0.3.0-dev.2
 
 #[mitm]
 hostname = uts-api.itunes.apple.com

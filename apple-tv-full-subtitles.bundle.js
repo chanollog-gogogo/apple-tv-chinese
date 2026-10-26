@@ -43,8 +43,8 @@ var AppleTVSubtitleCompat = (function(){
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCompat;
 
-;
-/* Apple TV display localization engine, 0.3.0-dev.1.
+;var AppleTVSubtitleTables = {"revision":"cfa478aa18dba4c3f2054f4c0959f6c9f3f2bbee","f1Replays":[{"slug":"australia","programId":"1337486392","assetId":"1881724926","revision":"f1aur22m1"},{"slug":"china","programId":"1337522687","assetId":"1881777941","revision":"f1cnr21m2"},{"slug":"japan","programId":"1326620577","assetId":"1881763666","revision":"f1jpr20m1"},{"slug":"miami","programId":"1364568578","assetId":"1881733891","revision":"f1mir20m1"},{"slug":"canada","programId":"1392837560","assetId":"1881753363","revision":"f1car20m1"},{"slug":"monaco","programId":"1411825097","assetId":"1881742204","revision":"f1mcr25m1"},{"slug":"barcelona-catalunya","programId":"1413846083","assetId":"1881690171","revision":"f1bar17m1"},{"slug":"austria","programId":"1429344944","assetId":"1882150267","revision":"f1atr22m1"},{"slug":"great-britain","programId":"1436852938","assetId":"1881739464","revision":"f1gbr26m1"},{"slug":"belgium","programId":"1457248952","assetId":"1881786635","revision":"f1ber12m1"},{"slug":"hungary","programId":"1461869625","assetId":"1881700068","revision":"f1hur32m1"},{"slug":"netherlands","programId":"1478680801","assetId":"1882152939","revision":"f1ntr23m1"},{"slug":"spain","programId":"1497835498","assetId":"1881721455","revision":"f1spr22m1"},{"slug":"azerbaijan","programId":"1509835184","assetId":"1882094604","revision":"azr1-76f792623176"}],"seriesTargets":{"1880499459":{"slug":"dts-s08e01","programId":"1288232144"},"1880598345":{"slug":"dts-s08e02","programId":"1288232871"},"1880600976":{"slug":"dts-s08e03","programId":"1287879890"},"1880613354":{"slug":"dts-s08e04","programId":"1287887004"},"1880628537":{"slug":"dts-s08e05","programId":"1312757141"},"1880639133":{"slug":"dts-s08e06","programId":"1287881790"},"1880673513":{"slug":"dts-s08e07","programId":"1288233124"},"1880677128":{"slug":"dts-s08e08","programId":"1287884341"}},"seriesRevision":"dts8-20260920d","shelfTargets":{"6809945696":"2003-28-days-later","6813800850":"2007-american-gangster","6809968299":"2001-black-hawk-down","6809916755":"2006-blood-diamond","6809968224":"1998-fallen","6809968703":"2014-fury","6809968396":"2010-going-the-distance","6809968982":"1997-good-will-hunting","6809969812":"2002-insomnia","6812093448":"2015-jurassic-world","6809973625":"1976-taxi-driver","6809916863":"2011-the-girl-with-the-dragon-tattoo","6809975421":"2008-tropic-thunder"},"shelfRevisions":{"6809945696":"shelf1002-d4548655248c-credit-v2","6813800850":"shelf1002-21ba574ddeb3-credit-v2","6809968299":"shelf1002-dcb4b0cab8cb-credit-v2","6809916755":"shelf1002-9648950795c1-credit-v2","6809968224":"shelf1002-342fb0c70442-credit-v2","6809968703":"shelf1002-d179d8ebf9f6-credit-v2","6809968396":"shelf1002-53613ec3a8fb-credit-v2","6809968982":"shelf1002-a1fdcb98a5d7-credit-v2","6809969812":"shelf1002-68f174a204e7-credit-v2","6812093448":"shelf1002-61f160f59338-credit-v2","6809973625":"shelf1002-a35439e85a3a-credit-v2","6809916863":"shelf1002-511ca230dc1a-credit-v2","6809975421":"shelf1002-fbb44dd760b6-credit-v2"}};
+/* Apple TV display localization engine, 0.3.0-dev.2.
  * Original US requests/catalog/rights/playback stay authoritative.
  * Anonymous regional Apple metadata is used ONLY as a display-field source.
  * No account headers, original query tokens, or response bodies are forwarded.
@@ -52,9 +52,13 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
  */
 (function () {
   'use strict';
-  var VERSION = '0.3.0-dev.1';
-  var CACHE_KEY = 'AppleTVZh.v3.public-display-cache';
+  var VERSION = '0.3.0-dev.2';
+  var CACHE_KEY = 'AppleTVZh.v4.public-display-cache';
   var TTL = 7 * 86400000;
+  var BODY_LIMIT = 2 * 1024 * 1024;
+  var HELPER_LIMIT = 1024 * 1024;
+  var CACHE_LIMIT = 192000;
+  var REQUEST_LIMIT = 24;
   var TEXT = ['title','shortTitle','subtitle','description','summary','heroDescription','seoDescription','seoTitle','showTitle','episodeTitle','movieTitle','localizedType','name','displayName','label','buttonText','text','badge','eyebrow'];
   var BLOCK = /^(assets|offers|personalizedOffers|upsellOffers|itunesMediaApiData|rating|contentAdvisoryDetails|fpsKeyServerQueryParameters|userProps|contentPersonalizedInfo|episodesContentPersonalizedInfo|entitlements|purchase|purchases|license|licenses|headers|cookies)$/;
   var UI = {
@@ -156,7 +160,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
     });return a;
   }
   function parseRequest(req,res) {
-    if(!req || !res || typeof res.body!=='string' || res.body.length>6*1024*1024)return null;
+    if(!req || !res || typeof res.body!=='string' || res.body.length>BODY_LIMIT)return null;
     if(req.method && req.method!=='GET')return null;
     var m=/^https:\/\/uts-api\.itunes\.apple\.com(\/uts\/v[23]\/(?:configurations|canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:\/[^?#]*)?)(?:\?([^#]*))?$/.exec(req.url || '');
     if(!m || /(?:^|&)atv_zh_helper=1(?:&|$)/.test(m[2] || ''))return null;
@@ -179,8 +183,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
     return {url:'https://uts-api.itunes.apple.com'+path+'?caller=js&v=100&sf='+sf+'&locale='+lang+'&pfm=desktop&utsk=0&atv_zh_helper=1',
       headers:{Accept:'application/json','Accept-Language':lang,'X-Apple-I-Locale':lang},timeout:5};
   }
-  function localize(req,res,sources,cached) {
-    var plan=parseRequest(req,res);if(!plan)return null;
+  function regionalMap(sources,cached) {
     var map=mergeIndex({},cached || {},true);
     // TW provides localized artwork/names; SG provides simplified descriptions.
     mergeIndex(map,index(sources.TW || {}),true);
@@ -192,6 +195,9 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
     var hk=index(sources.HK || {});mergeIndex(map,hk,false);
     // Hong Kong often has localized title artwork when TW/SG keep English art.
     Object.keys(hk).forEach(function(id){if(hk[id].fields.title)Object.assign(map[id].images,hk[id].images);});
+    return map;
+  }
+  function applyDisplay(plan,map) {
     var stats={objects:0,text:0,images:0,ui:0,missing:[]};
     // UI locale is independent of storefront. Never copy another region's
     // configuration, tabs, currency, account fields, features or route targets.
@@ -222,27 +228,47 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
       TEXT.concat(['genre']).forEach(function(k){if(typeof o[k]==='string'){var t=ui(o[k]);if(t && t!==o[k]){o[k]=t;stats.ui++;}}});
     });
     entities(plan.body).forEach(function(e){if(!map[e.id] || !map[e.id].fields.title)stats.missing.push(e);});
+    return stats;
+  }
+  function localize(req,res,sources,cached) {
+    var plan=parseRequest(req,res);if(!plan)return null;
+    var map=regionalMap(sources || {},cached);
+    var stats=applyDisplay(plan,map);
     return {body:JSON.stringify(plan.body),index:map,stats:stats};
   }
   var api={version:VERSION,parseRequest:parseRequest,index:index,mergeIndex:mergeIndex,localize:localize,entities:entities,helper:helper,identity:identity,descriptor:descriptor};
   if(typeof module!=='undefined' && module.exports)module.exports=api;
   if(typeof $done==='function' && typeof $response==='undefined'){$done({});return;}
   if(typeof $done!=='function' || typeof $request==='undefined' || typeof $response==='undefined')return;
-  var plan=parseRequest($request,$response);
   var isUTS=/^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\//.test($request.url || '');
   var isHelper=/(?:[?&])atv_zh_helper=1(?:&|$)/.test($request.url || '');
   if(!isUTS || isHelper || ($request.method && $request.method!=='GET')){$done({});return;}
   var responseCode=String($response.statusCode || $response.status || 200);
   if(!/^(?:HTTP\/\S+\s+)?200(?:\s|$)/.test(responseCode)){$done({});return;}
+  if(typeof $response.body!=='string' || $response.body.length>BODY_LIMIT){$done({});return;}
+  var plan=parseRequest($request,$response);
+  // Unsupported UTS paths need no work unless the subtitle adapter has an HLS
+  // field to process. In particular, do not start a runtime for account settings.
+  if(!plan && !/"hlsUrl"\s*:/.test($response.body)){$done({});return;}
   var cache={};try{
     var raw=typeof $prefs!=='undefined'?$prefs.valueForKey(CACHE_KEY):typeof $persistentStore!=='undefined'?$persistentStore.read(CACHE_KEY):null;
-    var loaded=JSON.parse(raw || '{}');if(loaded.time>Date.now()-TTL && loaded.records)cache=loaded.records;
+    var loaded=raw && raw.length<=CACHE_LIMIT?JSON.parse(raw):{};
+    if(loaded.time>Date.now()-TTL && loaded.records)cache=loaded.records;
+    raw=null;loaded=null;
   }catch(_){}
-  var start=Date.now(),deadline=start+18000,sources={TW:{},SG:{},HK:{}},requests=0,failed=0;
+  var start=Date.now(),deadline=start+10000,requests=0,failed=0,completed=false;
+  var watchdog=typeof setTimeout==='function'?setTimeout(function(){complete({});},12000):null;
+  function complete(value){
+    if(completed)return;
+    completed=true;
+    if(watchdog!==null && typeof clearTimeout==='function')clearTimeout(watchdog);
+    $done(value);
+  }
   function readValue(k){try{return typeof $prefs!=='undefined'?$prefs.valueForKey(k):typeof $persistentStore!=='undefined'?$persistentStore.read(k):null;}catch(_){return null;}}
   function writeValue(k,v){try{if(typeof $prefs!=='undefined')$prefs.setValueForKey(v,k);else if(typeof $persistentStore!=='undefined')$persistentStore.write(v,k);}catch(_){}}
   async function subtitleTables(){
     if(typeof AppleTVSubtitleCompat==='undefined')return null;
+    if(typeof AppleTVSubtitleTables!=='undefined' && AppleTVSubtitleTables.revision===AppleTVSubtitleCompat.revision)return AppleTVSubtitleTables;
     var k='AppleTVZh.subtitle-map.'+AppleTVSubtitleCompat.revision;
     try{var saved=JSON.parse(readValue(k)||'null');if(saved && saved.revision===AppleTVSubtitleCompat.revision)return saved;}catch(_){}
     return new Promise(function(resolve){
@@ -258,11 +284,15 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
       else resolve(null);
     });
   }
-  function fetchPublic(spec){return new Promise(function(resolve){
-    if(!spec || Date.now()>deadline){resolve(null);return;}
+  function fetchIndex(spec){return new Promise(function(resolve){
+    if(!spec || completed || requests>=REQUEST_LIMIT || Date.now()>deadline){resolve(null);return;}
     requests++;var settled=false,timer=typeof setTimeout==='function'?setTimeout(function(){failed++;finish(null);},5500):null;
     function finish(body){if(settled)return;settled=true;if(timer!==null&&typeof clearTimeout==='function')clearTimeout(timer);resolve(body);}
-    function parse(status,text){if(status!==200){failed++;finish(null);return;}try{var d=JSON.parse(text);finish(d && d.data && !d.error?d:null);}catch(_){failed++;finish(null);}}
+    function parse(status,text){
+      if(settled || completed)return;
+      if(Number(status)!==200 || typeof text!=='string' || text.length>HELPER_LIMIT){failed++;finish(null);return;}
+      try{var d=JSON.parse(text);finish(d && d.data && !d.error?index(d):null);}catch(_){failed++;finish(null);}
+    }
     if(typeof $task!=='undefined' && $task.fetch)$task.fetch({url:spec.url,method:'GET',headers:spec.headers,timeout:5}).then(function(r){parse(r.statusCode,r.body);},function(){failed++;finish(null);});
     else if(typeof $httpClient!=='undefined')$httpClient.get(spec,function(e,r,b){if(e){failed++;finish(null);}else parse(Number(r.status || r.statusCode),b);});
     else finish(null);
@@ -271,28 +301,42 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
     // Keep current-page identities before incidental related-title metadata.
     var priority=[],seen={};if(plan)walk(plan.body,function(o){var id=identity(o);if(id&&!seen[id]){seen[id]=true;priority.push(id);}});
     Object.keys(records).forEach(function(id){if(!seen[id])priority.push(id);});
-    var ids=priority.slice(0,700),kept={};ids.forEach(function(id){if(records[id])kept[id]=records[id];});
-    var v=JSON.stringify({time:Date.now(),records:kept});if(v.length>1800000)return;
+    var ids=priority.slice(0,150),kept={},size=128;
+    ids.forEach(function(id){if(records[id]){
+      var bytes=JSON.stringify(records[id]).length+id.length+8;
+      if(size+bytes<CACHE_LIMIT){kept[id]=records[id];size+=bytes;}
+    }});
+    var v=JSON.stringify({time:Date.now(),records:kept});if(v.length>CACHE_LIMIT)return;
     if(typeof $prefs!=='undefined')$prefs.setValueForKey(v,CACHE_KEY);
     else if(typeof $persistentStore!=='undefined')$persistentStore.write(v,CACHE_KEY);
   }catch(_){}}
   (async function(){
     var tablesPromise=subtitleTables();
     if(!plan){
-      var passthrough;try{passthrough=JSON.parse($response.body);}catch(_){$done({});return;}
+      var passthrough;try{passthrough=JSON.parse($response.body);}catch(_){complete({});return;}
       var tablesOnly=await tablesPromise,n=typeof AppleTVSubtitleCompat!=='undefined'?AppleTVSubtitleCompat.apply(passthrough,tablesOnly):0;
-      $done(n?{body:JSON.stringify(passthrough)}:{});return;
+      if(!completed)complete(n?{body:JSON.stringify(passthrough)}:{});return;
     }
-    await Promise.all(['TW','SG','HK'].map(async function(r){sources[r]=await fetchPublic(helper(plan.path,r)) || {};}));
-    var first=localize($request,$response,sources,cache),missing=first.stats.missing;
-    var queued=[];
-    missing.forEach(function(e){var route={Show:'shows',Movie:'movies',Episode:'episodes',Season:'seasons'}[e.type];['TW','SG','HK'].forEach(function(r){queued.push({r:r,spec:helper('/uts/v3/'+route+'/'+e.id,r)});});});
-    var cursor=0,records=first.index,lookups={TW:{},SG:{},HK:{}};
-    await Promise.all([0,1,2,3,4,5].map(async function(){while(cursor<queued.length && Date.now()<deadline){
-      var job=queued[cursor++],b=await fetchPublic(job.spec);if(b){
-        mergeIndex(lookups[job.r],index(b),true);
+    // A detail page can launch several response scripts at once on tvOS. Keep
+    // only compact metadata, and allow one auxiliary request per invocation.
+    // Avoid three full regional trees and repeated original-body parse/stringify.
+    var lookups={TW:{},SG:{},HK:{}},regions=['TW','SG','HK'];
+    if(!/\/configurations\/?$/.test(plan.path))for(var ri=0;ri<regions.length;ri++){
+      var region=regions[ri],pageIndex=await fetchIndex(helper(plan.path,region));
+      if(pageIndex)mergeIndex(lookups[region],pageIndex,true);
+    }
+    var records=mergeIndex({},cache,true);cache=null;
+    var missing=entities(plan.body).filter(function(e){
+      return ![lookups.TW,lookups.SG,lookups.HK,records].some(function(m){return m[e.id] && m[e.id].fields && m[e.id].fields.title;});
+    });
+    for(var mi=0;mi<missing.length && requests<REQUEST_LIMIT && Date.now()<deadline && !completed;mi++){
+      var entity=missing[mi],route={Show:'shows',Movie:'movies',Episode:'episodes',Season:'seasons'}[entity.type];
+      for(var rj=0;rj<regions.length && requests<REQUEST_LIMIT && Date.now()<deadline && !completed;rj++){
+        var rname=regions[rj],entry=await fetchIndex(helper('/uts/v3/'+route+'/'+entity.id,rname));
+        if(entry)mergeIndex(lookups[rname],entry,true);
       }
-    }}));
+    }
+    if(completed)return;
     // Deterministic preference, independent of concurrent network completion.
     mergeIndex(records,lookups.TW,true);mergeIndex(records,lookups.SG,false);
     Object.keys(lookups.SG).forEach(function(id){var d=lookups.SG[id];
@@ -301,12 +345,14 @@ if(typeof module!=='undefined'&&module.exports)module.exports=AppleTVSubtitleCom
     });
     mergeIndex(records,lookups.HK,false);
     Object.keys(lookups.HK).forEach(function(id){if(lookups.HK[id].fields.title)Object.assign(records[id].images,lookups.HK[id].images);});
-    var result=localize($request,$response,{TW:{},SG:{}},records);
-    var tables=await tablesPromise,output=JSON.parse(result.body);
-    var subtitleChanges=typeof AppleTVSubtitleCompat!=='undefined'?AppleTVSubtitleCompat.apply(output,tables):0;
-    save(result.index);
+    var stats=applyDisplay(plan,records);
+    lookups=null;
+    var tables=await tablesPromise;
+    if(completed)return;
+    var subtitleChanges=typeof AppleTVSubtitleCompat!=='undefined'?AppleTVSubtitleCompat.apply(plan.body,tables):0;
+    save(records);
     // Counts only: no URLs, search terms, account identifiers or tokens in logs.
-    console.log('[AppleTV-ZH '+VERSION+'] text='+result.stats.text+' ui='+result.stats.ui+' images='+result.stats.images+' missing='+result.stats.missing.length+' subtitle='+subtitleChanges+' mapping='+(tables?'ok':'unavailable')+' fetch='+requests+' failed='+failed+' ms='+(Date.now()-start));
-    $done({body:JSON.stringify(output)});
-  })().catch(function(){console.log('[AppleTV-ZH '+VERSION+'] original response retained');$done({});});
+    console.log('[AppleTV-ZH '+VERSION+'] text='+stats.text+' ui='+stats.ui+' images='+stats.images+' missing='+stats.missing.length+' subtitle='+subtitleChanges+' mapping='+(tables?'ok':'unavailable')+' fetch='+requests+' failed='+failed+' ms='+(Date.now()-start));
+    complete({body:JSON.stringify(plan.body)});
+  })().catch(function(){console.log('[AppleTV-ZH '+VERSION+'] original response retained');complete({});});
 })();

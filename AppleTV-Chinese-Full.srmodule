@@ -1,11 +1,11 @@
 #!name=Apple TV 中文全界面
-#!desc=0.3.0-dev.1：通用展示改写，保留美区；无现有字幕模块时使用。与其他 UTS 响应脚本互斥。官方缺少中文资料时保留原文。Mac已做阶段验收，tvOS/iOS尚待验收。
-#!version=0.3.0-dev.1
+#!desc=0.3.0-dev.2 修复候选：限制辅助查询与缓存，默认脚本引擎，保留美区；未安装原字幕模块时使用。待 tvOS 真机复测。
+#!version=0.3.0-dev.2
 #!author=chanollog-gogogo
-#!homepage=https://github.com/chanollog-gogogo/apple-tv-chinese/tree/dev-0.3
+#!homepage=https://github.com/chanollog-gogogo/apple-tv-chinese/tree/fix-tvos-resource-budget
 
 [Script]
-AppleTV-Full.response = type=http-response,engine=webview,pattern=^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/,requires-body=1,max-size=6291456,timeout=30,script-path=https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/dev-0.3/apple-tv-full.bundle.js?v=0.3.0-dev.1
+AppleTV-Full.response = type=http-response,pattern=^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/,requires-body=1,max-size=6291456,timeout=30,script-path=https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/apple-tv-full.bundle.js?v=0.3.0-dev.2
 
 [MITM]
 hostname = %APPEND% uts-api.itunes.apple.com
