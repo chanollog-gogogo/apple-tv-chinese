@@ -1,4 +1,4 @@
-/* Apple TV display localization engine, 0.3.0-dev.2.
+/* Apple TV display localization engine, 0.3.0-dev.3.
  * Original US requests/catalog/rights/playback stay authoritative.
  * Anonymous regional Apple metadata is used ONLY as a display-field source.
  * No account headers, original query tokens, or response bodies are forwarded.
@@ -6,13 +6,13 @@
  */
 (function () {
   'use strict';
-  var VERSION = '0.3.0-dev.2';
-  var CACHE_KEY = 'AppleTVZh.v4.public-display-cache';
+  var VERSION = '0.3.0-dev.3';
+  var CACHE_KEY = 'AppleTVZh.v5.public-display-cache';
   var TTL = 7 * 86400000;
-  var BODY_LIMIT = 2 * 1024 * 1024;
-  var HELPER_LIMIT = 1024 * 1024;
-  var CACHE_LIMIT = 192000;
-  var REQUEST_LIMIT = 24;
+  var BODY_LIMIT = 768 * 1024;
+  var HELPER_LIMIT = 768 * 1024;
+  var CACHE_LIMIT = 96000;
+  var REQUEST_LIMIT = 3;
   var TEXT = ['title','shortTitle','subtitle','description','summary','heroDescription','seoDescription','seoTitle','showTitle','episodeTitle','movieTitle','localizedType','name','displayName','label','buttonText','text','badge','eyebrow'];
   var BLOCK = /^(assets|offers|personalizedOffers|upsellOffers|itunesMediaApiData|rating|contentAdvisoryDetails|fpsKeyServerQueryParameters|userProps|contentPersonalizedInfo|episodesContentPersonalizedInfo|entitlements|purchase|purchases|license|licenses|headers|cookies)$/;
   var UI = {
@@ -116,7 +116,7 @@
   function parseRequest(req,res) {
     if(!req || !res || typeof res.body!=='string' || res.body.length>BODY_LIMIT)return null;
     if(req.method && req.method!=='GET')return null;
-    var m=/^https:\/\/uts-api\.itunes\.apple\.com(\/uts\/v[23]\/(?:configurations|canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:\/[^?#]*)?)(?:\?([^#]*))?$/.exec(req.url || '');
+    var m=/^https:\/\/uts-api\.itunes\.apple\.com(\/uts\/v[23]\/(?:canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:\/[^?#]*)?)(?:\?([^#]*))?$/.exec(req.url || '');
     if(!m || /(?:^|&)atv_zh_helper=1(?:&|$)/.test(m[2] || ''))return null;
     if(!/^(?:HTTP\/\S+\s+)?200(?:\s|$)/.test(String(res.statusCode || res.status || 200)))return null;
     var q={};(m[2] || '').split('&').forEach(function(p){var at=p.indexOf('=');if(at>=0){try{q[decodeURIComponent(p.slice(0,at))]=decodeURIComponent(p.slice(at+1));}catch(_){}}});
@@ -153,21 +153,8 @@
   }
   function applyDisplay(plan,map) {
     var stats={objects:0,text:0,images:0,ui:0,missing:[]};
-    // UI locale is independent of storefront. Never copy another region's
-    // configuration, tabs, currency, account fields, features or route targets.
-    if(/\/configurations\/?$/.test(plan.path)){
-      var app=plan.body.data.applicationProps;
-      if(app&&app.requiredParamsMap)Object.keys(app.requiredParamsMap).forEach(function(k){
-        var r=app.requiredParamsMap[k];if(r&&typeof r.locale==='string')r.locale='zh-Hans';
-      });
-      if(app&&app.storefront&&String(app.storefront.storefrontId)==='143441'){
-        var sf=app.storefront;
-        if(typeof sf.defaultLocale==='string')sf.defaultLocale='zh_Hans';
-        if(typeof sf.defaultLanguage==='string')sf.defaultLanguage='Chinese, Simplified';
-        if(Array.isArray(sf.localesSupported)&&sf.localesSupported.indexOf('zh_Hans')<0)sf.localesSupported.push('zh_Hans');
-        if(Array.isArray(sf.languagesSupported)&&sf.languagesSupported.indexOf('Chinese, Simplified')<0)sf.languagesSupported.push('Chinese, Simplified');
-      }
-    }
+    // Leave bootstrap locale maps and storefront capabilities entirely alone.
+    // Localization here is limited to returned display fields.
     walk(plan.body,function(o){
       var id=identity(o),d=map[id];
       if(d){
@@ -194,16 +181,38 @@
   if(typeof module!=='undefined' && module.exports)module.exports=api;
   if(typeof $done==='function' && typeof $response==='undefined'){$done({});return;}
   if(typeof $done!=='function' || typeof $request==='undefined' || typeof $response==='undefined')return;
+  var localOnly=typeof $argument==='string' && /(?:^|[&,])mode=local(?:$|[&,])/.test($argument);
+  var mode=localOnly?'local':'regional';
+  // Diagnostic logs contain counts and a route category only, never IDs or URLs.
+  var route=/\/uts\/v[123]\/([a-z-]+)/.exec($request.url || '');
+  var routeName=route?route[1]:'other';
+  function trace(stage,extra){console.log('[AppleTV-ZH '+VERSION+'] stage='+stage+' mode='+mode+' route='+routeName+(extra?' '+extra:''));}
   var isUTS=/^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\//.test($request.url || '');
   var isHelper=/(?:[?&])atv_zh_helper=1(?:&|$)/.test($request.url || '');
   if(!isUTS || isHelper || ($request.method && $request.method!=='GET')){$done({});return;}
   var responseCode=String($response.statusCode || $response.status || 200);
   if(!/^(?:HTTP\/\S+\s+)?200(?:\s|$)/.test(responseCode)){$done({});return;}
   if(typeof $response.body!=='string' || $response.body.length>BODY_LIMIT){$done({});return;}
+  // Do not change application bootstrap configuration or account responses.
+  // The original subtitle handler owns those paths outside this module regex.
+  if(/\/uts\/v[123]\/(?:configurations|user)(?:[/?]|$)/.test($request.url || '')){$done({});return;}
+  trace('start','chars='+$response.body.length);
   var plan=parseRequest($request,$response);
+  trace('parsed','display='+(plan?1:0));
   // Unsupported UTS paths need no work unless the subtitle adapter has an HLS
   // field to process. In particular, do not start a runtime for account settings.
   if(!plan && !/"hlsUrl"\s*:/.test($response.body)){$done({});return;}
+  if(localOnly){
+    try{
+      var localBody=plan?plan.body:JSON.parse($response.body);
+      var localStats=plan?applyDisplay(plan,{}):{text:0,ui:0,images:0};
+      var localSubs=typeof AppleTVSubtitleCompat!=='undefined' && typeof AppleTVSubtitleTables!=='undefined'?AppleTVSubtitleCompat.apply(localBody,AppleTVSubtitleTables):0;
+      var localChanged=localStats.text+localStats.ui+localStats.images+localSubs;
+      trace('done','ui='+localStats.ui+' subtitle='+localSubs+' fetch=0');
+      $done(localChanged?{body:JSON.stringify(localBody)}:{});
+    }catch(_){trace('retained');$done({});}
+    return;
+  }
   var cache={};try{
     var raw=typeof $prefs!=='undefined'?$prefs.valueForKey(CACHE_KEY):typeof $persistentStore!=='undefined'?$persistentStore.read(CACHE_KEY):null;
     var loaded=raw && raw.length<=CACHE_LIMIT?JSON.parse(raw):{};
@@ -240,12 +249,12 @@
   }
   function fetchIndex(spec){return new Promise(function(resolve){
     if(!spec || completed || requests>=REQUEST_LIMIT || Date.now()>deadline){resolve(null);return;}
-    requests++;var settled=false,timer=typeof setTimeout==='function'?setTimeout(function(){failed++;finish(null);},5500):null;
+    requests++;trace('fetch','n='+requests);var settled=false,timer=typeof setTimeout==='function'?setTimeout(function(){failed++;finish(null);},5500):null;
     function finish(body){if(settled)return;settled=true;if(timer!==null&&typeof clearTimeout==='function')clearTimeout(timer);resolve(body);}
     function parse(status,text){
       if(settled || completed)return;
       if(Number(status)!==200 || typeof text!=='string' || text.length>HELPER_LIMIT){failed++;finish(null);return;}
-      try{var d=JSON.parse(text);finish(d && d.data && !d.error?index(d):null);}catch(_){failed++;finish(null);}
+      try{trace('helper-body','chars='+text.length);var d=JSON.parse(text);finish(d && d.data && !d.error?index(d):null);}catch(_){failed++;finish(null);}
     }
     if(typeof $task!=='undefined' && $task.fetch)$task.fetch({url:spec.url,method:'GET',headers:spec.headers,timeout:5}).then(function(r){parse(r.statusCode,r.body);},function(){failed++;finish(null);});
     else if(typeof $httpClient!=='undefined')$httpClient.get(spec,function(e,r,b){if(e){failed++;finish(null);}else parse(Number(r.status || r.statusCode),b);});
@@ -255,7 +264,7 @@
     // Keep current-page identities before incidental related-title metadata.
     var priority=[],seen={};if(plan)walk(plan.body,function(o){var id=identity(o);if(id&&!seen[id]){seen[id]=true;priority.push(id);}});
     Object.keys(records).forEach(function(id){if(!seen[id])priority.push(id);});
-    var ids=priority.slice(0,150),kept={},size=128;
+    var ids=priority.slice(0,80),kept={},size=128;
     ids.forEach(function(id){if(records[id]){
       var bytes=JSON.stringify(records[id]).length+id.length+8;
       if(size+bytes<CACHE_LIMIT){kept[id]=records[id];size+=bytes;}
@@ -275,21 +284,11 @@
     // only compact metadata, and allow one auxiliary request per invocation.
     // Avoid three full regional trees and repeated original-body parse/stringify.
     var lookups={TW:{},SG:{},HK:{}},regions=['TW','SG','HK'];
-    if(!/\/configurations\/?$/.test(plan.path))for(var ri=0;ri<regions.length;ri++){
+    for(var ri=0;ri<regions.length;ri++){
       var region=regions[ri],pageIndex=await fetchIndex(helper(plan.path,region));
       if(pageIndex)mergeIndex(lookups[region],pageIndex,true);
     }
     var records=mergeIndex({},cache,true);cache=null;
-    var missing=entities(plan.body).filter(function(e){
-      return ![lookups.TW,lookups.SG,lookups.HK,records].some(function(m){return m[e.id] && m[e.id].fields && m[e.id].fields.title;});
-    });
-    for(var mi=0;mi<missing.length && requests<REQUEST_LIMIT && Date.now()<deadline && !completed;mi++){
-      var entity=missing[mi],route={Show:'shows',Movie:'movies',Episode:'episodes',Season:'seasons'}[entity.type];
-      for(var rj=0;rj<regions.length && requests<REQUEST_LIMIT && Date.now()<deadline && !completed;rj++){
-        var rname=regions[rj],entry=await fetchIndex(helper('/uts/v3/'+route+'/'+entity.id,rname));
-        if(entry)mergeIndex(lookups[rname],entry,true);
-      }
-    }
     if(completed)return;
     // Deterministic preference, independent of concurrent network completion.
     mergeIndex(records,lookups.TW,true);mergeIndex(records,lookups.SG,false);
@@ -299,6 +298,7 @@
     });
     mergeIndex(records,lookups.HK,false);
     Object.keys(lookups.HK).forEach(function(id){if(lookups.HK[id].fields.title)Object.assign(records[id].images,lookups.HK[id].images);});
+    trace('apply');
     var stats=applyDisplay(plan,records);
     lookups=null;
     var tables=await tablesPromise;
@@ -307,6 +307,9 @@
     save(records);
     // Counts only: no URLs, search terms, account identifiers or tokens in logs.
     console.log('[AppleTV-ZH '+VERSION+'] text='+stats.text+' ui='+stats.ui+' images='+stats.images+' missing='+stats.missing.length+' subtitle='+subtitleChanges+' mapping='+(tables?'ok':'unavailable')+' fetch='+requests+' failed='+failed+' ms='+(Date.now()-start));
-    complete({body:JSON.stringify(plan.body)});
+    trace('serialize');
+    var output=JSON.stringify(plan.body);
+    trace('done','chars='+output.length+' fetch='+requests);
+    complete({body:output});
   })().catch(function(){console.log('[AppleTV-ZH '+VERSION+'] original response retained');complete({});});
 })();

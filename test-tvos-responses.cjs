@@ -39,7 +39,7 @@ function run(id,episodes){return new Promise((resolve,reject)=>{
     $done:r=>{try{
       assert.ok(r.body);const output=JSON.parse(r.body),before=JSON.parse(input);adapter.apply(before,tables);
       assert.deepEqual(protectedData(output),protectedData(before));
-      assert.equal(peak,1);assert.ok(calls<=24);assert.equal(originalParses,1);
+      assert.equal(peak,1);assert.ok(calls<=3);assert.equal(originalParses,1);
       if(!episodes)assert.match(output.data.content.title,/[\u3400-\u9fff]/);
       console.log('PASS',name,'bytes='+Buffer.byteLength(input),'calls='+calls,'peak='+peak,'title='+(output.data.content?.title||'(episode list)'));
       resolve();

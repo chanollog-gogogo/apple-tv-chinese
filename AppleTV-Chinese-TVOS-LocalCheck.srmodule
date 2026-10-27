@@ -1,0 +1,10 @@
+#!name=Apple TV 界面诊断（JSC 无查询）
+#!desc=0.3.0-dev.3：tvOS 分阶段修复测试，明确 JSC；仅验证本地文字改写，不提供完整中文片名。保留原 v261013a 字幕模块并置于其上方；旧界面模块停用。未通过真机验收。
+#!version=0.3.0-dev.3
+#!author=chanollog-gogogo
+
+[Script]
+AppleTV-Full.response = type=http-response,engine=jsc,pattern=^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[23]\/(?:canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:[\/?]|$),requires-body=1,max-size=786432,timeout=15,argument=mode=local,script-path=https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-explicit-jsc/apple-tv-full-subtitles.bundle.js?v=0.3.0-dev.3
+
+[MITM]
+hostname = %APPEND% uts-api.itunes.apple.com

@@ -5,7 +5,7 @@ if(tables.revision!=='cfa478aa18dba4c3f2054f4c0959f6c9f3f2bbee')throw Error('Une
 fs.writeFileSync(path.join(__dirname,'apple-tv-full.bundle.js'),pieces[1]);
 fs.writeFileSync(path.join(__dirname,'apple-tv-full-subtitles.bundle.js'),pieces[0]+'\n;var AppleTVSubtitleTables = '+JSON.stringify(tables)+';\n'+pieces[1]);
 if(process.argv.includes('--package')){
- const files=['full-display.js','subtitle-adapter.js','subtitle-mappings-v261013a.json','build-full.cjs','test-core.cjs','test-resource-budget.cjs','test-tvos-responses.cjs','test-adapter.cjs','apple-tv-full.bundle.js','apple-tv-full-subtitles.bundle.js','AppleTV-Chinese-Full.srmodule','AppleTV-Chinese-Full.snippet','AppleTV-Chinese-Full-SubtitleCompat.srmodule','AppleTV-Chinese-Full-SubtitleCompat.snippet','README-0.3.md','TESTING-0.3.md'];
+ const files=['AppleTV-Chinese-TVOS-LocalCheck.srmodule','AppleTV-Chinese-TVOS-JSC.srmodule','test-local-profile.js','test-staged.cjs','test-native-jsc.swift','full-display.js','subtitle-adapter.js','subtitle-mappings-v261013a.json','build-full.cjs','test-core.cjs','test-resource-budget.cjs','test-tvos-responses.cjs','test-adapter.cjs','apple-tv-full.bundle.js','apple-tv-full-subtitles.bundle.js','AppleTV-Chinese-Full.srmodule','AppleTV-Chinese-Full.snippet','AppleTV-Chinese-Full-SubtitleCompat.srmodule','AppleTV-Chinese-Full-SubtitleCompat.snippet','README-0.3.md','TESTING-0.3.md'];
  const out=path.join(__dirname,'publish-0.3');fs.mkdirSync(out,{recursive:true});
  files.forEach(name=>fs.copyFileSync(path.join(__dirname,name),path.join(out,name)));
  fs.copyFileSync(path.join(__dirname,'README-0.3.md'),path.join(out,'README.md'));

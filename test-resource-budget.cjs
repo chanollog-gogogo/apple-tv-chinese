@@ -40,13 +40,13 @@ function execute({body,path='shows/umc.cmc.example',reply=()=>({data:{}}),delay=
   const result=await budget.done;
   assert.ok(result.body);
   assert.deepEqual(JSON.parse(result.body),many);
-  assert.equal(budget.metrics().calls,24);
+  assert.equal(budget.metrics().calls,3);
   assert.equal(budget.metrics().peak,1);
   assert.equal(budget.metrics().originalParses,1);
   assert.equal(budget.metrics().originalSerializes,1);
   assert.equal(budget.metrics().doneCalls,1);
   assert.ok(!JSON.stringify(budget.logs).includes('NEVER_FORWARD'));
-  console.log('PASS request cap 24, one helper at a time, original parsed/serialized once, original US data preserved');
+  console.log('PASS request cap 3, one helper at a time, original parsed/serialized once, original US data preserved');
 
   const localized={data:{items:many.data.items.map(o=>({id:o.id,type:o.type,title:'中文标题'+o.id,description:'公开简介'.repeat(900)}))}};
   const parallel=Array.from({length:4},()=>execute({body:many,reply:()=>localized}));
@@ -57,7 +57,7 @@ function execute({body,path='shows/umc.cmc.example',reply=()=>({data:{}}),delay=
     assert.ok(after.data.items.every(o=>o.title.startsWith('中文标题')));
     assert.deepEqual(after.data.items.map(o=>o.assets),many.data.items.map(o=>o.assets));
     assert.deepEqual(after.data.items.map(o=>o.offers),many.data.items.map(o=>o.offers));
-    assert.ok(Object.values(p.writes).every(v=>v.length<=192000));
+    assert.ok(Object.values(p.writes).every(v=>v.length<=96000));
   }
   console.log('PASS four simultaneous detail responses, localized titles, unchanged assets/rights, bounded persistent cache');
 
@@ -66,11 +66,10 @@ function execute({body,path='shows/umc.cmc.example',reply=()=>({data:{}}),delay=
   assert.equal(settings.metrics().calls,0);
   assert.equal(settings.metrics().originalParses,0);
   const cfg=execute({body:{data:{applicationProps:{storefront:{storefrontId:143441,defaultLocale:'en_US'},requiredParamsMap:{Default:{sf:'143441',locale:'en-US'}}}}},path:'configurations'});
-  const config=JSON.parse((await cfg.done).body);
+  assert.deepEqual(Object.keys(await cfg.done),[]);
   assert.equal(cfg.metrics().calls,0);
-  assert.equal(config.data.applicationProps.storefront.storefrontId,143441);
-  assert.equal(config.data.applicationProps.requiredParamsMap.Default.locale,'zh-Hans');
-  console.log('PASS account settings skipped and language configuration handled without helper requests');
+  assert.equal(cfg.metrics().originalParses,0);
+  console.log('PASS account settings skipped and bootstrap configuration skipped without parsing or helper requests');
 
   const hls='https://play.itunes.apple.com/WebObjects/MZPlayLocal.woa/hls/subscription/playlist.m3u8?a=6812093448&id=123';
   const playback={data:{assets:{hlsUrl:hls,fpsKeyServerUrl:'KEEP_LICENSE'},entitlements:{paid:true}}};
@@ -81,7 +80,7 @@ function execute({body,path='shows/umc.cmc.example',reply=()=>({data:{}}),delay=
   assert.equal(play.metrics().calls,0);
   console.log('PASS pinned subtitle mapping works offline, without downloading or executing upstream code');
 
-  const big=execute({body:' '.repeat(2*1024*1024+1)});
+  const big=execute({body:' '.repeat(768*1024+1)});
   assert.deepEqual(Object.keys(await big.done),[]);
   assert.equal(big.metrics().originalParses,0);
   const race=execute({body:many,delay:30,scale:0.001});

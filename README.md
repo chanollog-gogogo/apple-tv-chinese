@@ -1,98 +1,44 @@
-# Apple TV 中文全界面：0.3 开发分支
+# Apple TV tvOS 界面修复：显式 JSC 分阶段候选
 
-这是通用展示改写引擎，不再限定 Silo 或任何影片名单。保留原美区首页列表、
-影片入口、列表顺序、权益、价格、DRM 和账户；从 Apple 台湾、新加坡、香港
-的匿名公开接口取得中文展示资料，按相同内容 ID 匹配，不用其他区的片库替换美区。
+版本 `0.3.0-dev.3`。**尚未通过 tvOS 真机验收，不能作为稳定版使用。**
 
-**它仍是开发版，不代表所有内容和所有设备已验收完成。** 官方中文区没有的
-名称、简介或图片会保留原文；不接入第三方翻译服务。
+## 已确认与未确认
 
-## 0.3.0-dev.2：tvOS 断开问题的修复候选
+- 用户对照：仅保留原字幕模块时可用；启用旧界面模块后出现内容不可用及 VPN 自动断开。
+- dev.2 真机测试也失败。删除 `engine=webview` 不能证明切换到了 JSC；本候选明确设置 `engine=jsc`。
+- 未取得 Jetsam 或崩溃报告。内存压力、引擎或网络任务生命周期问题仍须分别验证。
+- 停用故障模块后，App 可能还停留在失败状态。已验证的恢复操作是只保留字幕模块，并彻底退出、重新打开 Apple TV App。
 
-2026-10-26 真机对照：启用 dev.1 时打开剧集会触发 VPN 断开；仅停用界面模块、
-保留原字幕模块后恢复正常。抓取日志显示多个详情和分集响应同时进入脚本，
-随后日志流中断；系统报告的隧道内存上限为 50 MB。没有取得 Jetsam／崩溃报告，
-因此具体的系统终止原因仍未证实，不能把内存不足写成已确定结论。
+## 电视测试顺序
 
-dev.2 改用小火箭默认脚本引擎；每个响应至多一个辅助查询、最多 24 次查询，
-同一原响应只解析和序列化一次，外区响应立即缩为展示字段索引。展示缓存限制为
-192,000 字符、最多 150 个条目；输入超过 2 Mi 字符或辅助响应超过 1 Mi 字符时
-跳过，12 秒仍未完成则保留原响应。查询预算可能使冷缓存的部分条目保留原文。
-这些界限用于约束工作量，并不等同于对运行时内存峰值的保证。
+旧的 dev.1、dev.2 界面模块均保持停用，**保留 rexchen1803 的 v261013a 字幕模块**。同一时间仅启用下面一个界面候选，并置于字幕模块上方。
 
-原字幕 v261013a 的 3 KB 固定映射数据随兼容包提供，不再在每次响应中下载映射。
-原字幕模块的播放、播放列表与字幕请求脚本仍须保留。
+1. [第一步：JSC 无查询诊断](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-explicit-jsc/AppleTV-Chinese-TVOS-LocalCheck.srmodule)。同步运行、不读取缓存、不运行定时器、不发辅助 HTTP 请求。只验证本地界面文字替换及固定字幕地址兼容；大部分片名仍会保持英文，这不是完整中文界面交付。
+2. **第一步通过后才测试** [第二步：JSC 外区资料候选](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-explicit-jsc/AppleTV-Chinese-TVOS-JSC.srmodule)。每个响应最多依次读取台、新、港三个匿名公开资料响应。没有逐片回补，冷缓存部分条目可能保留原文。
 
-这是待电视端复测的修复候选。请勿仅凭本地自动检查就认定已解决 tvOS 断开。
+两者使用同一个兼容 bundle，通过 `argument=mode=local` / `mode=regional` 区分。更换时停用前一个候选，重新连接小火箭，并彻底退出、重开 Apple TV App。
 
-## 安装选择
+## 处理范围
 
-### 没有现用 Apple TV 字幕插件
+仅 `uts-api.itunes.apple.com` 上的界面内容响应：canvases、shelves、brands、channels、movies、shows、episodes、seasons、search。原配置和原字幕模块继续处理 configurations、user/settings 及播放接口；本候选不改启动语言映射、账户、登录、storefront、影片列表或授权。
 
-- [小火箭：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full.srmodule)
-- [QuanX：独立展示版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full.snippet)
+原字幕兼容代码只保留原 v261013a 固定映射行为，不包含完整字幕安装包，不能单独替代原字幕模块。不会引入第三方翻译服务。
 
-### 已安装并使用 rexchen1803 的 v261013a 字幕模块
+## 资源与日志
 
-- [小火箭：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full-SubtitleCompat.srmodule)
-- [QuanX：现有字幕兼容版](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-resource-budget/AppleTV-Chinese-Full-SubtitleCompat.snippet)
+- 模块引擎明确为 JSC，原字幕模块引擎保持不变。
+- 主响应和辅助响应各有 768 Ki 字符的脚本内限制，模块层为 786432 字节；超出会保留原文。字符数与字节数不同。
+- 外区模式每个响应最多三个查询，串行；不同响应仍可能同时运行，**不是全设备总并发保证**。
+- 外区模式缓存最多 96000 字符、80 个身份项。无查询模式不使用此缓存。
+- 阶段日志仅记录路由类别、数量和长度，不记录完整 URL、影片 ID、原始请求参数、授权头或账户资料。
+- 本地检查不能证明 tvOS 在实际系统负载下稳定，也不能替代首页、详情页及 VPN 状态的电视验收。
 
-保留原字幕模块的其他规则；本模块必须在原 UTS 响应处理之前命中。
-兼容版不是字幕安装包，没有原字幕插件时不要使用兼容版，否则其播放桥接地址
-无法被处理。它只兼容上述已核对版本，不承诺未来上游更改自动兼容。
+## 本地验证
 
-不要同时启用独立版和兼容版。停用旧 0.1 切区版、0.2 Silo 版及其他重叠的
-iRingo TV 响应脚本。保留原节点、分流和网络场景。
-
-打开小火箭／QuanX 总开关、脚本／重写和 HTTPS 解密；使用客户端已安装且
-已信任的证书。模块本身只追加 `uts-api.itunes.apple.com`；字幕插件自己的
-域名范围另行保留，不追加账户登录域名或 `*.apple.com`。
-单独勾选模块而不开启必要的解密不会生效。
-
-## 实际处理范围
-
-- 首页栏目、影视卡片、搜索结果、电影／剧集详情、各季分集和预告／花絮展示。
-- 中文名称、简介、已有图片位置、类型名称、节目标签、季／集及常用操作文字。
-- `configurations` 只调整语言字段；美区 storefront、路由、账户和功能列表不变。
-- 原生系统／App 菜单仍依赖设备和 App 自身的中文语言设置。模块不修改程序文件。
-- 台湾中文名称，优先新加坡简体简介；可取得时优先香港标题图片。
-  Apple 官方图片本身可能保留英文品牌字，不能保证每一张海报都含中文。
-- 无中文数据、网络失败或超时时保留原响应，而不是删掉影片或伪造可播放状态。
-
-## 隐私、性能及字幕
-
-辅助请求只去 Apple 内容域名，不复制原请求的 Cookie、授权头、账户参数或
-原始查询串。兼容版附带已安装字幕版本的固定 JSON 映射常量；
-**不执行下载的 JavaScript**，也不把影视资料发给 GitHub。
-没有第三方翻译、登录拦截、付费接口或凭证日志。
-
-公开展示资料在客户端缓存七天，优先保留当前页面；请求有数量和时间预算。
-缓存冷启动会比普通页面慢，实际速度取决于网络。日志仅输出改写数、缺失数、
-请求数和耗时，不输出完整 URL、账户标识或令牌。
-
-兼容处理只沿用现有字幕规则对 `hlsUrl` 的变换，不更改许可证服务器或权益；
-显示字段处理与该兼容层独立。详见 [TESTING-0.3.md](TESTING-0.3.md)。
-
-源码可运行 `node test-core.cjs` 做无联网合成数据检查，运行 `node build-full.cjs`
-重建两种脚本。匿名接口及原生客户端的阶段验收记录在上述测试文档中。
-
-## 验收状态与已知缺口
-
-- Mac 已观察到首页“继续观看”、多部剧集及电影卡片中文化。
-- Mac 的《基地》名称、当前单集、分集列表和简介中文化；美区链接及播放保留。
-- Mac 的《侏罗纪世界》名称、简介中文化，电影仍能播放；字幕菜单保留简体中文。
-- 匿名首页样本 76 个不同影视／分集条目中取得 75 个中文名称。`Insomnia` 的同 ID
-  在所查中文区不可用，保留原文。这个统计不代表全片库覆盖率。
-- 播放器信息栏的片名、个别原生回顾按钮、部分预告片和附加评论文字仍可能英文，
-  已登记为缺口，不能据此宣称“整个 App 全部完成”。
-- tvOS 和 iOS 本分支尚未真机验收，不能把 Mac 结果等同于三端全部通过。
-- 无需退出 Apple 账户。不要为刷新模块反复登录或转区。
+参见 [TESTING.md](TESTING.md)。已通过通用字段保护、资源限制、四个公开 tvOS 响应并发重放、77 个原字幕 HLS 映射，以及 macOS 原生 JavaScriptCore 的无查询模式检查。**macOS JavaScriptCore 测试不是小火箭或 tvOS 集成测试。**
 
 ## 回退
 
-备份现有配置。异常时停用本模块，保留原字幕模块，彻底退出并重开 Apple TV。
-不删除证书、不重置 App、不清除观看记录，也不需要改节点或路由器。
+停用两个候选及全部旧界面模块，保留原字幕模块；重新连接小火箭，再彻底退出并重开 Apple TV App。不要重装小火箭、重新生成证书或退出 Apple 账户来进行本测试。
 
-原创源码为 MIT 许可。字幕兼容参考项目：
-[rexchen1803/apple-video-subtitles](https://github.com/rexchen1803/apple-video-subtitles)。
-本分支不打包其源代码、字幕文件、用户账户或流量记录。
+此分支中旧的 `AppleTV-Chinese-Full*.srmodule` / `*.snippet` 为历史文件，不用于本轮电视测试。正式通用分支及其他设备链接未更新。

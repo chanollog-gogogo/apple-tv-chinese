@@ -13,8 +13,7 @@ assert.equal(api.helper('/uts/v3/user/settings','TW'),null);assert.equal(api.hel
 assert.equal(api.localize({...req,method:'POST'},{body:JSON.stringify(us)},{},{}),null);
 assert.equal(api.localize(req,{body:'invalid JSON'},{},{}),null);
 const cfg={data:{applicationProps:{storefront:{country:'United States',storefrontId:143441,defaultLocale:'en_US',defaultLanguage:'English',localesSupported:['en_US'],languagesSupported:['English']},requiredParamsMap:{Default:{sf:'143441',locale:'en-US',utsk:'TEST_ONLY'}},tabs:[{type:'WatchNow',title:'Home'}]}}};
-const changed=JSON.parse(api.localize({...req,url:'https://uts-api.itunes.apple.com/uts/v3/configurations?sf=143441'},{body:JSON.stringify(cfg)},{},{}).body);
-assert.equal(changed.data.applicationProps.storefront.storefrontId,143441);assert.equal(changed.data.applicationProps.requiredParamsMap.Default.sf,'143441');assert.equal(changed.data.applicationProps.requiredParamsMap.Default.utsk,'TEST_ONLY');assert.equal(changed.data.applicationProps.requiredParamsMap.Default.locale,'zh-Hans');
+assert.equal(api.localize({...req,url:'https://uts-api.itunes.apple.com/uts/v3/configurations?sf=143441'},{body:JSON.stringify(cfg)},{},{}),null);
 let n=0;vm.runInNewContext(fs.readFileSync(__dirname+'/full-display.js','utf8'),{$request:req,$done:r=>{n++;assert.equal(Object.keys(r).length,0);}});assert.equal(n,1);
 assert.throws(()=>compat.parse('not fixed JSON constants'));
-console.log('PASS generic display identity matching, US catalog/rights/playback preservation, anonymous requests, language-only configuration and fail-open wrappers.');
+console.log('PASS generic display identity matching, US catalog/rights/playback preservation, anonymous requests, untouched bootstrap configuration and fail-open wrappers.');
