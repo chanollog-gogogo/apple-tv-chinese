@@ -1,0 +1,10 @@
+#!name=Apple TV 中文界面（首页与分集修复候选）
+#!desc=0.3.0-dev.6：仅响应改写，保留零偏好访问；支持较大首页及数字分页。置于原字幕模块上方，停用旧界面模块。已测首页及第三季，查询失败保留原文。
+#!version=0.3.0-dev.6
+#!author=chanollog-gogogo
+
+[Script]
+AppleTV-Full.response = type=http-response,engine=jsc,pattern=^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[23]\/(?:canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:[\/?]|$),requires-body=1,max-size=1310720,timeout=15,argument=mode=regional,script-path=https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/fix-tvos-explicit-jsc/apple-tv-response-only.bundle.js?v=0.3.0-dev.6
+
+[MITM]
+hostname = %APPEND% uts-api.itunes.apple.com
