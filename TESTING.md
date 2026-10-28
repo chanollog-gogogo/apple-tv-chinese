@@ -1,26 +1,22 @@
-# 0.2.0-preview 测试记录
+# tvOS response-only candidate 0.3.0-dev.6
 
-运行 `node test.cjs`；匿名联网验证运行 `node test.cjs --live`。
+Development build tested on Apple TV 4K (3rd generation), tvOS 27.0, Shadowrocket 2.2.92. Homepage and Ted Lasso season-three Chinese names/descriptions were visibly verified. VPN process remained alive and no new tunnel crash report was found during this test. This is not a claim of complete catalog coverage or a playback test.
 
-- 展示字段白名单外的 JSON 保持相等，请求不变。
-- 其他影片、首页、登录、播放接口跳过。
-- 非美区、错误响应、错误 ID、未知单集保留原响应。
-- 不创建缺失图片位置，不重排或增删分集。
-- Shadowrocket／QuanX 包装仅完成一次，无网络 API 依赖。
-- 已知当前单集及分集列表中文化，播放／权益字段保持原样。
-- 兼容旧缓存请求规则：请求阶段直接完成、不再切换区服。
+- Removes the dev.5 request handler. Original conditional headers, cookies, account and routing are untouched.
+- Keeps strict numeric episode pagination for anonymous Apple regional metadata lookups.
+- Original body cap increased from 768 Ki characters to 1280 Ki characters, after measuring a real TV homepage at 937401 characters. Helper cap remains 768 Ki, at most three serial queries. No preference reads/writes.
+- Canvas metadata queries use pfm=atv. Names/artwork come from TW/HK; simplified descriptions prefer SG. Original US catalog, rights, asset URLs and subtitle adaptation remain authoritative.
+- Uses only uts-api.itunes.apple.com under the existing certificate. Disable all older UI modules, keep the original subtitle module below this module.
 
-## Mac 原型实测
+Local checks: 950019-character public homepage (249 text and 177 image changes); numeric pagination/private-data isolation; zero preference access; original requests untouched; bounded concurrency/late callbacks; original US assets and rights retained. Local tests are not proof of complete tvOS coverage or playback acceptance.
 
-独立展示模块：Silo 中文名称／图片，美区链接不变，正片可播放。
-当前分集简介已中文，单集卡片显示“进入火焰”，顶部标题仍有英文。
-原美区影片保留，实际影片播放进度前进，无购买操作。
+Install: AppleTV-Chinese-TVOS-ResponseOnly.srmodule
 
-两个独立 UTS 响应脚本有冲突，不能据两个模块启用断言兼容。
-本机专用串联副本已验证展示与字幕重写同时发生、电影播放、字幕菜单有简体中文。
-受保护画面无法截图，未验证实际字幕内容。串联副本未公开分发，
-本仓库安装链接为独立展示版，不包含字幕代码。
+Rollback: disable this candidate, enable dev.4 or retain only the subtitle module; reconnect VPN, force-quit and reopen Apple TV.
 
-测试后已关闭临时解密及测试模块，恢复原字幕模块。
-仅 Silo 和七个静态单集，无全片库、首页或所有标题字段覆盖。
-tvOS、iOS 此版本仅格式／包装测试，尚待真机验证。
+## Device findings
+
+The homepage response (936638 characters) completed with 251 text changes, 346 UI changes and 175 image changes. Ted Lasso season-three episode names and descriptions were Chinese and loaded without persistent placeholders. Regional helper requests can fail transiently: the first season-one request retained English text on one attempt. Original content is retained on lookup failure. No external translation service is used. Continue Watching artwork may remain English when anonymous regional lookup has no matching metadata.
+
+
+Current release 2026.10.29 uses the exact dev.6 runtime bytes, renamed apple-tv-zh.js. Shadowrocket and Quantumult X wrappers restrict response handling to the same UTS v2/v3 display routes. The Quantumult X wrapper is locally validated, not yet device-accepted on iOS.

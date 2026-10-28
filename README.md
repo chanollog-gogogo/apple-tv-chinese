@@ -1,51 +1,28 @@
-# Apple TV 中文展示（保留美区）
+# Apple TV 中文界面
 
-**0.2.0-preview，只是《Silo／末日地堡》展示样板，不是全片库中文化。**
+当前发布 2026.10.29，运行脚本为 tvOS 已验证的 0.3.0-dev.6。保留美区片库、免费内容、账号权益和原播放地址，只替换能匹配到的中文展示文字与图片。不会替换成另一地区整份片库，不接第三方翻译。
 
-旧版 0.1.0 会改变内容区服，实际测试曾导致美区影片入口消失和播放失败，已撤回该实现。
-请更新整个模块／重写资源，不能只更新旧脚本缓存。旧链接继续使用，但内容已换成不改请求、不切区的新版本。
+## 安装
 
-## 安装链接
+- [Shadowrocket 小火箭](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/AppleTV-Chinese.srmodule)
+- [Quantumult X](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/AppleTV-Chinese.snippet)
 
-- 小火箭模块（macOS／tvOS）：[AppleTV-Chinese.srmodule](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/AppleTV-Chinese.srmodule)
-- QuanX 远程重写（iOS）：[AppleTV-Chinese.snippet](https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/AppleTV-Chinese.snippet)
+启用当前界面模块，放在原 Apple TV 中文字幕模块上方。原字幕模块需继续保留；此包不是完整字幕安装包。停用旧界面模块、旧 Silo 测试版、切区版和同接口重复 iRingo 规则。HTTPS 解密只追加 uts-api.itunes.apple.com，使用本机当前配置对应的已受信任证书；不涉及 Apple 登录域名。
 
-**字幕兼容限制：不要与其他同样处理 `uts-api.itunes.apple.com` 的响应脚本同时启用。**
-本机发现独立安装的中文展示脚本会被字幕模块抢先匹配，两个模块勾选不代表两者都会运行。
-保留现有字幕功能的用户，应先继续用原字幕模块，不要为了安装本试验版关闭字幕功能。
-已验证一个本机专用串联副本，但含第三方代码，未作为公开安装版本发布。
+家庭路由负责出海时，小火箭总开关仍要开启，可保持全局路由直连。关 VPN 或关 HTTPS 解密不能实现界面改写。
 
-安装前备份配置，停用旧版中文界面模块及 iRingo TV 等重叠资源。
-需开启客户端总开关、重写／脚本及 HTTPS 解密，使用已安装和信任的客户端证书。
-本模块只追加 `uts-api.itunes.apple.com`，不需要 `*.apple.com` 或账户登录域名。
-不要为刷新界面反复退出、登录 Apple 账户。
+## 实现与验证
 
-模块不是完整代理配置，不改节点、路由、Wi-Fi 场景或账户地区。
-在家走直连也须保留客户端处理流量，关闭客户端总开关后脚本不会运行。
-重开 Apple TV App 后从原美区片库进入 Silo 详情检查效果。
+台湾/香港中文名称及图片，新加坡简体简介优先，按相同内容 ID 合并展示字段。没有中文资料或查询失败时保留原文。继续观看部分海报、原生按钮及无中文资料内容仍可能是英文，不能保证全片库百分之百中文。
 
-## 覆盖与边界
+2026-10-28，Apple TV 4K 第三代、tvOS 27.0、Shadowrocket 2.2.92：真实首页约 94 万字符已成功处理；首页中文海报/简介/栏目及 Ted Lasso 第二、三季分集标题简介均可见；期间 VPN 未断开，未发现新增隧道崩溃。永久 GitHub 来源重连后再次确认首页中文。未重新测试正片播放。Mac 和 iOS QuanX 此发布尚未重新完成真机验收；同脚本两种 HTTP API 的本地回归已通过。
 
-- 只接受美区 `sf=143441`、匹配内容 ID、GET 成功响应。
-- Silo 详情：中文剧名、简介及已有的三种图片位置。
-- 七个已知单集：S1 E1–E6、S2 E10 的名称、简介和剧名字段。
-- 当前观看单集 smartEpisode 及已知分集列表／详情可改展示字段。
-- 使用台湾公开中文名称／图片、新加坡公开简体简介（2026-10-24 静态资料）。
-- 未知影片、其他单集、首页推荐／搜索列表、栏目、系统菜单均保持原样。
-- Mac 顶部仍有一处 Into the Fire 英文标题，尚未覆盖全部展示字段。
-- 不改变 storefront、locale、请求头、片库列表、顺序、价格、权益、播放入口、DRM、HLS、字幕地址、登录或订阅。
-- 没有外部请求、翻译服务、数据上传或凭证日志；异常保留原响应。
+## tvOS 修复
 
-## 验证状态
+旧脚本通过共享偏好数据库保存缓存，真实崩溃报告显示 CFPreferences 数据超限并在脚本队列触发 SIGABRT。当前完整脚本不读写 $prefs 或 $persistentStore，使用固定字幕映射、有限串行匿名查询。首页处理上限提高为 1280 Ki 字符，辅助响应仍限制 768 Ki、最多三次串行查询。分集传递严格校验的数字分页，首页元数据使用 atv 平台。撤掉 dev.5 的请求拦截，仅做响应改写；请求拦截与当次加载异常有关，但未单独证明全部网络错误的唯一根因。
 
-Mac 已看到中文剧名和当前分集简介，原美区链接保留；原创剧及原本可访问的美区电影能播放。
-字幕串联副本的菜单保留简体中文，但未逐句验证实际字幕。
-**本公开独立模块不等同于串联副本。tvOS 和 iOS 本版本尚未真机验证。**
+## 回退
 
-详见 [TESTING.md](TESTING.md)。发生异常请停用本模块、重开 Apple TV，保留原证书和原字幕模块。
+停用界面模块，保留原字幕，重新连接 VPN，彻底退出并重开 Apple TV App。先检查日志与证书对应关系，不要重置账号或全屋路由。
 
-## 来源与许可
-
-此版本为独立展示字段改写，不打包 iRingo 或第三方字幕脚本，不冒充官方插件。
-早期参考 [NSRingo/TV](https://github.com/NSRingo/TV) 的 UTS 参数设计；该切区方案已撤回。
-原创代码使用 MIT 许可，见 LICENSE。Apple 内容及图片权利归各自权利人。
+仓库当前文件均为本发布。旧测试分支删除前已做本地完整 Git 镜像备份，历史提交只供追溯，不再作为安装入口。

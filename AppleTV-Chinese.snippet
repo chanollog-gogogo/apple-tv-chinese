@@ -1,8 +1,8 @@
-#!name=Apple TV 中文展示（保留美区·Silo试验版）
-#!desc=0.2.0-preview：仅 Silo 和七个已知单集的中文展示，不改美区片库或播放字段；非全片库翻译。不要与其他匹配 UTS 的响应脚本同时启用。iOS 真机尚待验证。
+#!name=Apple TV 中文界面
+#!desc=2026.10.29 与 tvOS 已验证 dev.6 使用相同响应脚本；保留美区片库、原字幕和权益；失败保留原文。QuanX 尚待 iOS 真机验收。
 
 #[rewrite_local]
-^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v3\/(shows\/umc\.cmc\.3yksgc857px0k0rqe5zd4jice(\/episodes)?|episodes\/umc\.cmc\.(4v3gat04y129mm0smdu6ea3dh|1txm8rg6r6vensxnvun57g9s0|4qn04sxn1o6qdazlw79gxe4bz|4ins4pefrjghalocg6k5ipll|4zbndvtns69z1b8r4w99m6j3i|7dsfdof0flp499zgvxc7jis3z|6ta3tndgffvigo7yd078eyy58))\/?(\?|$) url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/apple-tv-zh.js?v=0.2.0-preview
+^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[23]\/(?:canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:[\/?]|$) url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/apple-tv-zh.js?v=2026.10.29
 
 #[mitm]
 hostname = uts-api.itunes.apple.com
