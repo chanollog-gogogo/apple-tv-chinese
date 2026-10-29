@@ -20,3 +20,7 @@ The homepage response (936638 characters) completed with 251 text changes, 346 U
 
 
 Current release 2026.10.29 uses the exact dev.6 runtime bytes, renamed apple-tv-zh.js. Shadowrocket and Quantumult X wrappers restrict response handling to the same UTS v2/v3 display routes. The Quantumult X wrapper is locally validated, not yet device-accepted on iOS.
+
+## QuanX 2026.10.29-qx.1
+
+Separate QuanX bundle: playback hosts are not changed for unmapped content; fixed 47-movie/8-episode/13-replay mappings are parsed as JSON from the pinned original QuanX handler without executing downloaded source. Checks cover a regression reproducer for the prior SR-only hostname mutation, mapped manifest revisions and matching original QuanX echo rules, original assets/rights, anonymous helper isolation, non-display UTS paths and fail-open behavior. Device playback remains pending. Shadowrocket script/wrapper hashes must remain identical to the prior release.

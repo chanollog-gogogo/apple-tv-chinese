@@ -1,8 +1,8 @@
-#!name=Apple TV 中文界面
-#!desc=2026.10.29 与 tvOS 已验证 dev.6 使用相同响应脚本；保留美区片库、原字幕和权益；失败保留原文。QuanX 尚待 iOS 真机验收。
+#!name=Apple TV 中文界面（QuanX）
+#!desc=2026.10.29-qx.1；QuanX独立播放兼容，不使用小火箭CDN改写；保留原字幕模块并放在其上方。仅本地回归通过，待iPhone播放复测。
 
 #[rewrite_local]
-^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[23]\/(?:canvases|shelves|brands|channels|movies|shows|episodes|seasons|search)(?:[\/?]|$) url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/apple-tv-zh.js?v=2026.10.29
+^https:\/\/uts-api\.itunes\.apple\.com\/uts\/v[123]\/(?!configurations(?:[\/?]|$)|user(?:[\/?]|$)) url script-response-body https://raw.githubusercontent.com/chanollog-gogogo/apple-tv-chinese/main/apple-tv-zh-quanx.js?v=2026.10.29-qx.1
 
 #[mitm]
 hostname = uts-api.itunes.apple.com
